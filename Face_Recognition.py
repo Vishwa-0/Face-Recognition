@@ -155,5 +155,11 @@ with right:
         - Sensitive to lighting and image quality  
         - Not a face verification system
         """)
-
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.header("Limitations")
+    st.write("""
+   - Works only on trained identities  
+    - Sensitive to lighting and image quality  
+    - Not a face verification system
+    """)
     st.markdown('</div>', unsafe_allow_html=True)
