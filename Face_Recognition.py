@@ -3,114 +3,173 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
-# -----------------------------
-# Page config
-# -----------------------------
+# ---------------- Page Config ----------------
 st.set_page_config(
-    page_title="Face Recognition",
-    layout="centered"
+    page_title="FaceID",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# -----------------------------
-# Minimal premium styling
-# -----------------------------
+# ---------------- Global CSS ----------------
 st.markdown("""
 <style>
-.main {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+body {
+    background-color: #0f172a;
 }
-.card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    border-radius: 18px;
-    padding: 32px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+
+.block-container {
+    padding-top: 2rem;
 }
-.title {
+
+h1, h2, h3 {
+    color: #e5e7eb;
+}
+
+p, li {
+    color: #cbd5e1;
+}
+
+.hero {
+    padding: 2.5rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1e293b, #020617);
+    margin-bottom: 2rem;
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.65);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.result-card {
+    padding: 1.8rem;
+    border-radius: 16px;
     text-align: center;
-    color: white;
-    font-size: 36px;
-    font-weight: 700;
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
 }
-.subtitle {
+
+.footer {
     text-align: center;
-    color: #cfd8dc;
-    font-size: 14px;
-    margin-bottom: 25px;
-}
-.result {
-    text-align: center;
-    font-size: 32px;
-    font-weight: 700;
-    color: #00e5ff;
-}
-.conf {
-    text-align: center;
-    color: #cfd8dc;
-    font-size: 14px;
+    color: #94a3b8;
+    font-size: 0.85rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# ---------------- Constants ----------------
 IMG_SIZE = 224
 CLASS_NAMES = ["Santhosh", "Swathi", "Vishwa"]
 
-# -----------------------------
-# Load model
-# -----------------------------
+# ---------------- Load Model ----------------
 @st.cache_resource
 def load_model():
     return tf.keras.models.load_model("Face-Recognition.h5")
 
 model = load_model()
 
-# -----------------------------
-# Main card
-# -----------------------------
-st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.markdown("<div class='title'>Face Recognition</div>", unsafe_allow_html=True)
-st.markdown(
-    "<div class='subtitle'>CNN-based identity classification for internal team members</div>",
-    unsafe_allow_html=True
-)
+# ---------------- Hero Section ----------------
+st.markdown("""
+<div class="hero">
+    <h1>FaceID</h1>
+    <h3>Deep Learning–Based Identity Recognition</h3>
+    <p>
+        FaceID identifies individuals from facial images using a
+        convolutional neural network trained on internal team data.
+        The system performs supervised classification — not clustering
+        or similarity guessing.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader(
-    "Upload a face image",
-    type=["jpg", "jpeg", "png"]
-)
+# ---------------- Metrics ----------------
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("Model Type", "CNN")
+m2.metric("Classes", "3")
+m3.metric("Input", "Face Image")
+m4.metric("Inference", "< 1 sec")
 
-predict_btn = st.button("Predict Identity")
+# ---------------- Main Layout ----------------
+left, center, right = st.columns([1.3, 1.8, 1.4])
 
-# -----------------------------
-# Prediction
-# -----------------------------
-if uploaded_file and predict_btn:
-    img = Image.open(uploaded_file).convert("RGB")
-    img = img.resize((IMG_SIZE, IMG_SIZE))
-    img_array = np.array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
+# -------- Left --------
+with left:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.header("About the Model")
+    st.write("""
+    This system uses a **Convolutional Neural Network (CNN)**
+    trained on labeled facial images of team members.
 
-    preds = model.predict(img_array)[0]
-    idx = int(np.argmax(preds))
+    The model learns facial patterns such as structure, texture,
+    and spatial features to perform **identity classification**.
 
-    identity = CLASS_NAMES[idx]
-    confidence = preds[idx] * 100
+    This is a **supervised learning** system.
+    """)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.15)'>", unsafe_allow_html=True)
-    st.markdown(f"<div class='result'>{identity}</div>", unsafe_allow_html=True)
-    st.markdown(
-        f"<div class='conf'>Confidence: {confidence:.2f}%</div>",
-        unsafe_allow_html=True
+# -------- Center --------
+with center:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.header("Identity Recognition")
+
+    uploaded_file = st.file_uploader(
+        "Upload a face image for identification",
+        type=["jpg", "jpeg", "png"]
     )
 
-st.markdown("</div>", unsafe_allow_html=True)
+    predict = st.button("Identify Person", use_container_width=True)
 
-# -----------------------------
-# Footer (quiet, not empty)
-# -----------------------------
-st.markdown(
-    "<p style='text-align:center;color:#90a4ae;font-size:12px;'>"
-    "Model trained using a custom CNN on internal facial image data"
-    "</p>",
-    unsafe_allow_html=True
-)
+    if uploaded_file and predict:
+        img = Image.open(uploaded_file).convert("RGB")
+        img = img.resize((IMG_SIZE, IMG_SIZE))
+        img_array = np.array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+
+        preds = model.predict(img_array)[0]
+        idx = int(np.argmax(preds))
+        identity = CLASS_NAMES[idx]
+        confidence = preds[idx] * 100
+
+        st.markdown(
+            f"""
+            <div class="result-card">
+                <h2>{identity}</h2>
+                <p>Recognition Confidence: {confidence:.2f}%</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -------- Right --------
+with right:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.header("Recognized Identities")
+
+    with st.expander("Santhosh"):
+        st.write("CNN-trained facial representation")
+
+    with st.expander("Swathi"):
+        st.write("CNN-trained facial representation")
+
+    with st.expander("Vishwa"):
+        st.write("CNN-trained facial representation")
+
+    with st.expander("Limitations"):
+        st.write("""
+        - Works only on trained identities  
+        - Sensitive to lighting and image quality  
+        - Not a face verification system
+        """)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- Footer ----------------
+st.markdown("""
+<div class="footer">
+    FaceID • Supervised Face Recognition • Educational Use Only
+</div>
+""", unsafe_allow_html=True)
