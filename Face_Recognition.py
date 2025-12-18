@@ -4,58 +4,55 @@ import numpy as np
 from PIL import Image
 
 # -----------------------------
-# Page configuration
+# Page config
 # -----------------------------
 st.set_page_config(
-    page_title="Team Face Recognition",
+    page_title="Face Recognition",
     layout="centered"
 )
 
 # -----------------------------
-# Glass UI styling
+# Minimal premium styling
 # -----------------------------
 st.markdown("""
 <style>
 .main {
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
 }
-.glass {
-    background: rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(14px);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+.card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
 }
 .title {
-    color: white;
     text-align: center;
+    color: white;
+    font-size: 36px;
+    font-weight: 700;
 }
-.sub {
+.subtitle {
+    text-align: center;
     color: #cfd8dc;
-    text-align: center;
     font-size: 14px;
+    margin-bottom: 25px;
 }
-.metric {
-    font-size: 22px;
-    color: white;
-    font-weight: 600;
+.result {
     text-align: center;
-}
-.name {
-    text-align: center;
-    font-size: 34px;
+    font-size: 32px;
     font-weight: 700;
     color: #00e5ff;
+}
+.conf {
+    text-align: center;
+    color: #cfd8dc;
+    font-size: 14px;
 }
 </style>
 """, unsafe_allow_html=True)
 
 IMG_SIZE = 224
-
-# -----------------------------
-# Class names (from training)
-# -----------------------------
 CLASS_NAMES = ["Santhosh", "Swathi", "Vishwa"]
 
 # -----------------------------
@@ -68,30 +65,26 @@ def load_model():
 model = load_model()
 
 # -----------------------------
-# Header
+# Main card
 # -----------------------------
-st.markdown("<div class='glass'>", unsafe_allow_html=True)
-st.markdown("<h1 class='title'>Face Recognition System</h1>", unsafe_allow_html=True)
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.markdown("<div class='title'>Face Recognition</div>", unsafe_allow_html=True)
 st.markdown(
-    "<p class='sub'>CNN-based identity classification for internal team members</p>",
+    "<div class='subtitle'>CNN-based identity classification for internal team members</div>",
     unsafe_allow_html=True
 )
-st.markdown("</div>", unsafe_allow_html=True)
 
-# -----------------------------
-# Upload section
-# -----------------------------
-st.markdown("<div class='glass'>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader(
-    "Upload a face image for identification",
+    "Upload a face image",
     type=["jpg", "jpeg", "png"]
 )
-st.markdown("</div>", unsafe_allow_html=True)
+
+predict_btn = st.button("Predict Identity")
 
 # -----------------------------
-# Inference
+# Prediction
 # -----------------------------
-if uploaded_file:
+if uploaded_file and predict_btn:
     img = Image.open(uploaded_file).convert("RGB")
     img = img.resize((IMG_SIZE, IMG_SIZE))
     img_array = np.array(img) / 255.0
@@ -99,39 +92,25 @@ if uploaded_file:
 
     preds = model.predict(img_array)[0]
     idx = int(np.argmax(preds))
+
     identity = CLASS_NAMES[idx]
     confidence = preds[idx] * 100
 
-    # -------------------------
-    # Result card
-    # -------------------------
-    st.markdown("<div class='glass'>", unsafe_allow_html=True)
-    st.markdown("<div class='metric'>Identified Person</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='name'>{identity}</div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:1px solid rgba(255,255,255,0.15)'>", unsafe_allow_html=True)
+    st.markdown(f"<div class='result'>{identity}</div>", unsafe_allow_html=True)
     st.markdown(
-        f"<p class='sub'>Confidence: {confidence:.2f}%</p>",
+        f"<div class='conf'>Confidence: {confidence:.2f}%</div>",
         unsafe_allow_html=True
     )
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    # -------------------------
-    # Confidence distribution
-    # -------------------------
-    st.markdown("<div class='glass'>", unsafe_allow_html=True)
-    st.markdown("<div class='metric'>Confidence Distribution</div>", unsafe_allow_html=True)
-
-    for name, score in zip(CLASS_NAMES, preds):
-        st.write(name)
-        st.progress(float(score))
-
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Footer filler (no emptiness)
+# Footer (quiet, not empty)
 # -----------------------------
-st.markdown("<div class='glass'>", unsafe_allow_html=True)
 st.markdown(
-    "<p class='sub'>Model trained on labeled facial images using a custom CNN architecture</p>",
+    "<p style='text-align:center;color:#90a4ae;font-size:12px;'>"
+    "Model trained using a custom CNN on internal facial image data"
+    "</p>",
     unsafe_allow_html=True
 )
-st.markdown("</div>", unsafe_allow_html=True)
