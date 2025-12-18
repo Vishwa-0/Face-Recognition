@@ -149,15 +149,6 @@ with right:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     st.header("Recognized Identities")
 
-    with st.expander("Santhosh"):
-        st.write("CNN-trained facial representation")
-
-    with st.expander("Swathi"):
-        st.write("CNN-trained facial representation")
-
-    with st.expander("Vishwa"):
-        st.write("CNN-trained facial representation")
-
     with st.expander("Limitations"):
         st.write("""
         - Works only on trained identities  
@@ -166,10 +157,3 @@ with right:
         """)
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------- Footer ----------------
-st.markdown("""
-<div class="footer">
-    FaceID • Supervised Face Recognition • Educational Use Only
-</div>
-""", unsafe_allow_html=True)
