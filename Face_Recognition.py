@@ -4,15 +4,15 @@ import numpy as np
 from PIL import Image
 
 # -----------------------------
-# Page config (polish first)
+# Page configuration
 # -----------------------------
 st.set_page_config(
-    page_title="Face Recognition System",
+    page_title="Team Face Recognition",
     layout="centered"
 )
 
 # -----------------------------
-# Glass-style CSS
+# Glass UI styling
 # -----------------------------
 st.markdown("""
 <style>
@@ -20,24 +20,43 @@ st.markdown("""
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
 }
 .glass {
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px);
     border-radius: 20px;
-    padding: 25px;
+    padding: 28px;
+    margin-bottom: 25px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.35);
 }
-h1, h3, p {
+.title {
     color: white;
     text-align: center;
+}
+.sub {
+    color: #cfd8dc;
+    text-align: center;
+    font-size: 14px;
+}
+.metric {
+    font-size: 22px;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+}
+.name {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+    color: #00e5ff;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# Constants
-# -----------------------------
 IMG_SIZE = 224
-CLASS_NAMES = ["Person_1", "Person_2", "Person_3"]  
+
+# -----------------------------
+# Class names (from training)
+# -----------------------------
+CLASS_NAMES = ["Santhosh", "Swathi", "Vishwa"]
 
 # -----------------------------
 # Load model
@@ -49,60 +68,70 @@ def load_model():
 model = load_model()
 
 # -----------------------------
-# UI Header
+# Header
 # -----------------------------
 st.markdown("<div class='glass'>", unsafe_allow_html=True)
-st.markdown("<h1>Face Recognition System</h1>", unsafe_allow_html=True)
-st.markdown("<p>Deep learning–based identity classification</p>", unsafe_allow_html=True)
+st.markdown("<h1 class='title'>Face Recognition System</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<p class='sub'>CNN-based identity classification for internal team members</p>",
+    unsafe_allow_html=True
+)
 st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("")
-
 # -----------------------------
-# Image Upload
+# Upload section
 # -----------------------------
 st.markdown("<div class='glass'>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader(
-    "Upload a face image",
+    "Upload a face image for identification",
     type=["jpg", "jpeg", "png"]
 )
-
-# -----------------------------
-# Prediction button
-# -----------------------------
-predict_btn = st.button("Identify Person")
-
-if uploaded_file and predict_btn:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_container_width=True)
-
-    # Preprocess
-    img = image.resize((IMG_SIZE, IMG_SIZE))
-    img_array = np.array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-
-    # Predict
-    preds = model.predict(img_array)[0]
-    predicted_class = CLASS_NAMES[np.argmax(preds)]
-    confidence = np.max(preds) * 100
-
-    st.markdown("### Prediction Result")
-    st.success(f"**Identity:** {predicted_class}")
-    st.info(f"**Confidence:** {confidence:.2f}%")
-
-    # Confidence breakdown
-    st.markdown("### Confidence per Class")
-    for name, score in zip(CLASS_NAMES, preds):
-        st.progress(float(score))
-        st.write(f"{name}: {score * 100:.2f}%")
-
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------
-# Footer
+# Inference
 # -----------------------------
-st.markdown("""
-<p style="color:white; text-align:center; opacity:0.7;">
-Built with TensorFlow & Streamlit
-</p>
-""", unsafe_allow_html=True)
+if uploaded_file:
+    img = Image.open(uploaded_file).convert("RGB")
+    img = img.resize((IMG_SIZE, IMG_SIZE))
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+
+    preds = model.predict(img_array)[0]
+    idx = int(np.argmax(preds))
+    identity = CLASS_NAMES[idx]
+    confidence = preds[idx] * 100
+
+    # -------------------------
+    # Result card
+    # -------------------------
+    st.markdown("<div class='glass'>", unsafe_allow_html=True)
+    st.markdown("<div class='metric'>Identified Person</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='name'>{identity}</div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<p class='sub'>Confidence: {confidence:.2f}%</p>",
+        unsafe_allow_html=True
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # -------------------------
+    # Confidence distribution
+    # -------------------------
+    st.markdown("<div class='glass'>", unsafe_allow_html=True)
+    st.markdown("<div class='metric'>Confidence Distribution</div>", unsafe_allow_html=True)
+
+    for name, score in zip(CLASS_NAMES, preds):
+        st.write(name)
+        st.progress(float(score))
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# -----------------------------
+# Footer filler (no emptiness)
+# -----------------------------
+st.markdown("<div class='glass'>", unsafe_allow_html=True)
+st.markdown(
+    "<p class='sub'>Model trained on labeled facial images using a custom CNN architecture</p>",
+    unsafe_allow_html=True
+)
+st.markdown("</div>", unsafe_allow_html=True)
